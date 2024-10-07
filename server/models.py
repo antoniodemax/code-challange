@@ -65,10 +65,21 @@ class HeroPower(db.Model, SerializerMixin):
     strength = db.Column(db.String, nullable=False)
 
     # add relationships
+    hero = db.relationship('Hero', back_populates='hero_powers')
+    power = db.relationship('Power', back_populates='hero_powers')
+
+
 
     # add serialization rules
+    serialize_rules = ('_hero.hero_powers', '_power.hero_powers',)
 
     # add validation
+    @validates('strength')
+    def validate_strength(self, key, value):
+        allowed_strengths = ['Strong', 'Weak', 'Average']
+        if value not in allowed_strengths:
+            raise ValueError(f'Strength must be one of: {allowed_strengths}')
+        return value
 
     def __repr__(self):
         return f'<HeroPower {self.id}>'
