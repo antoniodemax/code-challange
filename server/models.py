@@ -19,8 +19,10 @@ class Hero(db.Model, SerializerMixin):
     super_name = db.Column(db.String)
 
     # add relationship
+    hero_powers = db.relationship('HeroPower', back_populates='hero')
 
     # add serialization rules
+    serialize_rules = ('_power.hero', '_hero_powers',)
 
     def __repr__(self):
         return f'<Hero {self.id}>'
