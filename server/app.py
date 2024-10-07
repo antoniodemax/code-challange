@@ -35,7 +35,7 @@ def get_hero_by_id(id):
     if not hero:
         return make_response({"error": "Hero not found"}, 404)
     
-    return jsonify(hero.to_dict(rules=('-power.hero', '-hero_powers.hero')))
+    return jsonify(hero.to_dict())
 
 @app.route('/powers', methods=['GET'])
 def get_all_powers():
@@ -50,8 +50,7 @@ def get_power_by_id(id):
     if not power:
         return make_response(jsonify({"error": "Power not found"}), 404)
     
-    power_data = power.to_dict()
-    return make_response(jsonify(power_data), 200)
+    return make_response(jsonify(power.to_dict()), 200)
 
 @app.route('/powers/<int:id>', methods=['PATCH'])
 def update_power(id):
@@ -65,7 +64,7 @@ def update_power(id):
     if "description" in data:
         description = data["description"]
         if len(description) < 20:
-            return make_response(jsonify({"errors": ["validation errors"]}), 400)
+            return make_response(jsonify({"errors": ["Description must be at least 20 characters long."]}), 400)
         
         power.description = description
         db.session.commit()
@@ -79,7 +78,7 @@ def create_hero_power():
 
     strength = data.get('strength')
     if strength not in ["Strong", "Weak", "Average"]:
-        return jsonify({'errors': ["validation errors"]}), 400
+        return jsonify({'errors': ["Strength must be 'Strong', 'Weak', or 'Average'."]}), 400
 
     hero_id = data.get('hero_id')
     power_id = data.get('power_id')
@@ -104,10 +103,10 @@ def create_hero_power():
         'power_id': hero_power.power_id,
         'strength': hero_power.strength,
         'hero': Hero.query.get(hero_power.hero_id).name,
-        'power': Power.query.get(hero_power.power_id).name
+        'power': Power.query.get(hero_power.power_id).description
     }
 
-    return jsonify(response), 200
+    return jsonify(response), 201
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
