@@ -36,10 +36,23 @@ class Power(db.Model, SerializerMixin):
     description = db.Column(db.String)
 
     # add relationship
+    hero_powers = db.relationship('HeroPower', back_populates='hero')
+
+
+
+
 
     # add serialization rules
+    serialize_rules = ('_power.hero', '_hero_powers',)
+
+
 
     # add validation
+    @validates('description')
+    def validate_description(self, key, value):
+        if not value or len(value) < 20:
+            raise ValueError('Description must be at least 20 characters long')
+        return value
 
     def __repr__(self):
         return f'<Power {self.id}>'
