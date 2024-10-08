@@ -1,13 +1,137 @@
+# from flask import Flask, jsonify, request, make_response
+# from flask_migrate import Migrate
+# from models import db, Hero, Power, HeroPower
+# import os
+
+# BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+# DATABASE = os.environ.get(
+#     "DB_URI", f"sqlite:///{os.path.join(BASE_DIR, 'app.db')}"
+# )
+
+# app = Flask(__name__)
+# app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE
+# app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+# app.json.compact = False
+
+# migrate = Migrate(app, db)
+# db.init_app(app)
+
+# @app.route('/')
+# def index():
+#     return '<h1>Code challenge</h1>'
+
+# @app.route('/heroes', methods=['GET'])
+# def get_all_heroes():
+#     try:
+#         heroes = Hero.query.all()
+#         heroes_data = [hero.to_dict(rules=('-hero_powers',)) for hero in heroes]
+#         return jsonify(heroes_data), 200
+#     except Exception as e:
+#         return jsonify({"error": str(e)}), 500
+
+# @app.route('/heroes/<int:id>', methods=['GET'])
+# def get_hero_by_id(id):
+#     try:
+#         hero = Hero.query.get(id)
+#         if not hero:
+#             return make_response({"error": "Hero not found"}, 404)
+#         return jsonify(hero.to_dict(rules=('-power.hero', '-hero_powers.hero'))), 200
+#     except Exception as e:
+#         return jsonify({"error": str(e)}), 500
+
+# @app.route('/powers', methods=['GET'])
+# def get_all_powers():
+#     try:
+#         powers = Power.query.all()
+#         powers_data = [power.to_dict(rules=('-hero_powers',)) for power in powers]
+#         return jsonify(powers_data), 200
+#     except Exception as e:
+#         return jsonify({"error": str(e)}), 500
+
+# @app.route('/powers/<int:id>', methods=['GET'])
+# def get_power_by_id(id):
+#     try:
+#         power = Power.query.get(id)
+#         if not power:
+#             return make_response({"error": "Power not found"}, 404)
+#         return jsonify(power.to_dict(rules=('-hero_powers',))), 200
+#     except Exception as e:
+#         return jsonify({"error": str(e)}), 500
+
+# @app.route('/powers/<int:id>', methods=['PATCH'])
+# def update_power(id):
+#     try:
+#         power = Power.query.get(id)
+#         if not power:
+#             return make_response({"error": "Power not found"}, 404)
+
+#         data = request.get_json()
+#         if "description" in data:
+#             description = data.get("description")
+#             if not isinstance(description, str) or len(description) < 20:
+#                 return make_response(jsonify({"errors": ["Description must be at least 20 characters long."]}), 400)
+#             power.description = description
+#             db.session.commit()
+
+#         return jsonify(power.to_dict(rules=('-hero_powers',))), 200
+#     except Exception as e:
+#         return jsonify({"error": str(e)}), 500
+
+# @app.route('/hero_powers', methods=['POST'])
+# def create_hero_power():
+#     try:
+#         data = request.get_json()
+
+#         strength = data.get('strength')
+#         if strength not in ["Strong", "Weak", "Average"]:
+#             return jsonify({'errors': ["Strength must be 'Strong', 'Weak', or 'Average'."]}), 400
+
+#         hero_id = data.get('hero_id')
+#         power_id = data.get('power_id')
+
+#         hero = Hero.query.get(hero_id)
+#         power = Power.query.get(power_id)
+
+#         if not hero:
+#             return jsonify({'errors': ["Hero not found"]}), 404
+#         if not power:
+#             return jsonify({'errors': ["Power not found"]}), 404
+
+#         hero_power = HeroPower(
+#             hero_id=hero_id,
+#             power_id=power_id,
+#             strength=strength
+#         )
+
+#         db.session.add(hero_power)
+#         db.session.commit()
+
+#         response = {
+#             'id': hero_power.id,
+#             'hero_id': hero_power.hero_id,
+#             'power_id': hero_power.power_id,
+#             'strength': hero_power.strength,
+#             'hero': hero.name,
+#             'power': power.name
+#         }
+
+#         return jsonify(response), 201
+#     except Exception as e:
+#         return jsonify({"error": str(e)}), 500
+
+# if __name__ == '__main__':
+#     app.run(port=5555, debug=True)
+
 
 from flask import Flask, jsonify, request, make_response
 from flask_migrate import Migrate
-from flask_restful import Api, Resource
 from models import db, Hero, Power, HeroPower
 import os
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 DATABASE = os.environ.get(
-    "DB_URI", f"sqlite:///{os.path.join(BASE_DIR, 'app.db')}")
+    "DB_URI", f"sqlite:///{os.path.join(BASE_DIR, 'app.db')}"
+)
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE
@@ -15,7 +139,6 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.json.compact = False
 
 migrate = Migrate(app, db)
-
 db.init_app(app)
 
 @app.route('/')
@@ -24,96 +147,102 @@ def index():
 
 @app.route('/heroes', methods=['GET'])
 def get_all_heroes():
-    heroes = Hero.query.all()
-    heroes_data = [hero.to_dict() for hero in heroes]
-    return jsonify(heroes_data)
+    try:
+        heroes = Hero.query.all()
+        heroes_data = [hero.to_dict(rules=('-hero_powers',)) for hero in heroes]
+        return jsonify(heroes_data), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/heroes/<int:id>', methods=['GET'])
 def get_hero_by_id(id):
-    hero = Hero.query.filter_by(id=id).first()
-
-    if not hero:
-        return make_response({"error": "Hero not found"}, 404)
-
-    return jsonify(hero.to_dict(rules=('-power.hero', '-hero_powers.hero')))
+    try:
+        hero = Hero.query.get(id)
+        if not hero:
+            return make_response({"error": "Hero not found"}, 404)
+        return jsonify(hero.to_dict(rules=('-power.hero', '-hero_powers.hero'))), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/powers', methods=['GET'])
 def get_all_powers():
-    powers = Power.query.all()
-    
-    powers_data = [power.to_dict() for power in powers]
-    
-    return make_response(jsonify(powers_data), 200)
+    try:
+        powers = Power.query.all()
+        powers_data = [power.to_dict(rules=('-hero_powers',)) for power in powers]
+        return jsonify(powers_data), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/powers/<int:id>', methods=['GET'])
 def get_power_by_id(id):
-    power = Power.query.filter_by(id=id).first()
-    
-    if not power:
-        return make_response(jsonify({"error": "Power not found"}), 404)
-    
-    power_data = power.to_dict()
-    
-    return make_response(jsonify(power_data), 200)
+    try:
+        power = Power.query.get(id)
+        if not power:
+            return make_response({"error": "Power not found"}, 404)
+        return jsonify(power.to_dict(rules=('-hero_powers',))), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/powers/<int:id>', methods=['PATCH'])
 def update_power(id):
-    power = Power.query.filter_by(id=id).first()
+    try:
+        power = Power.query.get(id)
+        if not power:
+            return make_response({"error": "Power not found"}, 404)
 
-    if not power:
-        return make_response(jsonify({"error": "Power not found"}), 404)
+        data = request.get_json()
+        if "description" in data:
+            description = data.get("description")
+            if not isinstance(description, str) or len(description) < 20:
+                return make_response(jsonify({"errors": ["validation errors"]}), 400)
+            power.description = description
+            db.session.commit()
 
-    data = request.get_json()
-
-    if "description" in data:
-        description = data["description"]
-        if len(description) < 20:
-            return make_response(jsonify({
-                "errors": ["validation errors"]}), 400)
-
-        power.description = description
-        db.session.commit()
-
-        return make_response(jsonify(power.to_dict()), 200)
-    
-    return make_response(jsonify({"errors": ["Invalid data provided"]}), 400)
-
+        return jsonify(power.to_dict(rules=('-hero_powers',))), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/hero_powers', methods=['POST'])
 def create_hero_power():
-    data = request.json
+    try:
+        data = request.get_json()
 
-    strength = data.get('strength')
-    if strength not in ["Strong", "Weak", "Average"]:
-        return jsonify({'errors': ["validation errors"]}), 400
+        strength = data.get('strength')
+        if strength not in ["Strong", "Weak", "Average"]:
+            return jsonify({'errors': ["validation errors"]}), 400
 
-    hero_id = data.get('hero_id')
-    power_id = data.get('power_id')
+        hero_id = data.get('hero_id')
+        power_id = data.get('power_id')
 
-    if not Hero.query.get(hero_id):
-        return jsonify({'errors': ["Hero not found"]}), 404
-    if not Power.query.get(power_id):
-        return jsonify({'errors': ["Power not found"]}), 404
+        hero = Hero.query.get(hero_id)
+        power = Power.query.get(power_id)
 
-    hero_power = HeroPower(
-        hero_id=hero_id,
-        power_id=power_id,
-        strength=strength
-    )
+        if not hero:
+            return jsonify({'errors': ["Hero not found"]}), 404
+        if not power:
+            return jsonify({'errors': ["Power not found"]}), 404
 
-    db.session.add(hero_power)
-    db.session.commit()
+        hero_power = HeroPower(
+            hero_id=hero_id,
+            power_id=power_id,
+            strength=strength
+        )
 
-    response = {
-        'id': hero_power.id,
-        'hero_id': hero_power.hero_id,
-        'power_id': hero_power.power_id,
-        'strength': hero_power.strength,
-        'hero': Hero.query.get(hero_power.hero_id).name,
-        'power': Power.query.get(hero_power.power_id).name
-    }
+        db.session.add(hero_power)
+        db.session.commit()
 
-    return jsonify(response), 200
+        response = {
+            'id': hero_power.id,
+            'hero_id': hero_power.hero_id,
+            'power_id': hero_power.power_id,
+            'strength': hero_power.strength,
+            'hero': hero.name,
+            'power': power.name
+        }
+
+        return jsonify(response), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
